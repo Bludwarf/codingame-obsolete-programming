@@ -50,6 +50,8 @@ internal class REPL(outputStream: OutputStream) {
                 is SwpToken -> swp()
                 is RotToken -> rot()
                 is OvrToken -> ovr()
+                is PosToken -> pos()
+                is NotToken -> not()
                 else -> throw UnexpectedTokenException(token)
             }
         }
@@ -102,6 +104,18 @@ internal class REPL(outputStream: OutputStream) {
 
     private fun ovr() {
         stack.push(stack.secondElement())
+    }
+    private fun pos() {
+        executeOneParamOperation { if (it >= 0) 1 else 0 }
+    }
+    private fun not() {
+        executeOneParamOperation { if (it == 0) 1 else 0 }
+    }
+
+    private fun executeOneParamOperation(operation: (param: Int) -> Int) {
+        val param = stack.pop()
+        val result = operation(param)
+        stack.push(result)
     }
 }
 

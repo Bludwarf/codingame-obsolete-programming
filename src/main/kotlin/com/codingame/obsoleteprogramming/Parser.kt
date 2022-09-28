@@ -24,6 +24,8 @@ class Parser {
                     "SWP" -> SwpToken()
                     "ROT" -> RotToken()
                     "OVR" -> OvrToken()
+                    "POS" -> PosToken()
+                    "NOT" -> NotToken()
                     else -> throw ParseException(instruction, 0)
                 }
 
@@ -37,7 +39,7 @@ private abstract class InstructionParser<T : Token> {
 }
 
 private class NumberParser : InstructionParser<NumberToken>() {
-    val regex = Regex("^(\\d+)$")
+    val regex = Regex("^-?\\d+$")
 
     override fun parse(instruction: String): NumberToken {
         return NumberToken(Integer.parseInt(instruction))
@@ -63,3 +65,5 @@ class DupToken : Token()
 class SwpToken() : Token()
 class RotToken() : Token()
 class OvrToken() : Token()
+class PosToken() : Token()
+class NotToken() : Token()
