@@ -35,25 +35,29 @@ internal class REPL(outputStream: OutputStream) {
     }
 
     private fun exec(line: String) {
-        val tokens = parser.parse(line)
-        tokens.forEach { token ->
-            when(token) {
-                is NumberToken -> putNumber(token)
-                is AddToken -> add()
-                is SubToken -> sub()
-                is MulToken -> mul()
-                is DivToken -> div()
-                is ModToken -> mod()
-                is OutToken -> println()
-                is PopToken -> pop()
-                is DupToken -> dup()
-                is SwpToken -> swp()
-                is RotToken -> rot()
-                is OvrToken -> ovr()
-                is PosToken -> pos()
-                is NotToken -> not()
-                else -> throw UnexpectedTokenException(token)
-            }
+        val instructions = parser.parse(line)
+        instructions.forEach { exec(it) }
+    }
+
+    private fun exec(instruction: Instruction) {
+        when (instruction) {
+            is NumberInstruction -> putNumber(instruction)
+            is AddInstruction -> add()
+            is SubInstruction -> sub()
+            is MulInstruction -> mul()
+            is DivInstruction -> div()
+            is ModInstruction -> mod()
+            is OutInstruction -> println()
+            is PopInstruction -> pop()
+            is DupInstruction -> dup()
+            is SwpInstruction -> swp()
+            is RotInstruction -> rot()
+            is OvrInstruction -> ovr()
+            is PosInstruction -> pos()
+            is NotInstruction -> not()
+            is FunctionDefinition -> noop()
+            is FunctionCall -> callFunction(instruction.referencedFunctionDefinition)
+            else -> throw UnexpectedInstructionException(instruction)
         }
     }
 
@@ -70,7 +74,7 @@ internal class REPL(outputStream: OutputStream) {
         stack.push(result)
     }
 
-    private fun putNumber(token: NumberToken) {
+    private fun putNumber(token: NumberInstruction) {
         stack.push(token.value)
     }
 
@@ -86,6 +90,7 @@ internal class REPL(outputStream: OutputStream) {
     private fun dup() {
         stack.push(stack.peek())
     }
+
     private fun swp() {
         val first = stack.pop()
         val second = stack.pop()
@@ -105,9 +110,11 @@ internal class REPL(outputStream: OutputStream) {
     private fun ovr() {
         stack.push(stack.secondElement())
     }
+
     private fun pos() {
         executeOneParamOperation { if (it >= 0) 1 else 0 }
     }
+
     private fun not() {
         executeOneParamOperation { if (it == 0) 1 else 0 }
     }
@@ -117,10 +124,18 @@ internal class REPL(outputStream: OutputStream) {
         val result = operation(param)
         stack.push(result)
     }
+
+    private fun noop() {
+        // Nothing to do
+    }
+
+    private fun callFunction(referencedFunctionDefinition: FunctionDefinition) {
+        referencedFunctionDefinition.instructions.forEach { exec(it) }
+    }
 }
 
 private fun <E> Stack<E>.secondElement(): E {
     return get(size - 2)
 }
 
-class UnexpectedTokenException(token: Token) : RuntimeException("Unexpected token $token")
+class UnexpectedInstructionException(instruction: Instruction) : RuntimeException("Unexpected instruction $instruction")
