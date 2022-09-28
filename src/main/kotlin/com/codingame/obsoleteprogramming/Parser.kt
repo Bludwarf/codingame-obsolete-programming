@@ -19,6 +19,11 @@ class Parser {
                     "DIV" -> DivToken()
                     "MOD" -> ModToken()
                     "OUT" -> OutToken()
+                    "POP" -> PopToken()
+                    "DUP" -> DupToken()
+                    "SWP" -> SwpToken()
+                    "ROT" -> RotToken()
+                    "OVR" -> OvrToken()
                     else -> throw ParseException(instruction, 0)
                 }
 
@@ -52,3 +57,9 @@ class MulToken : Token()
 class DivToken : Token()
 class ModToken : Token()
 class OutToken : Token()
+class PopToken : Token()
+class DupToken : Token()
+
+class SwpToken() : Token()
+class RotToken() : Token()
+class OvrToken() : Token()

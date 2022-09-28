@@ -13,6 +13,7 @@ internal class REPLTest {
     @ValueSource(
         strings = [
             "01 - Arithmetic test",
+            "02 - Stack Manipulations",
         ]
     )
     fun connectWith(baseName: String) {
