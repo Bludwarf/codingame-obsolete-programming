@@ -57,9 +57,12 @@ internal class REPL(outputStream: OutputStream) {
             is NotInstruction -> not()
             is FunctionDefinition -> noop()
             is FunctionCall -> callFunction(instruction.referencedFunctionDefinition)
+            is Conditional -> executeConditional(instruction)
             else -> throw UnexpectedInstructionException(instruction)
         }
     }
+
+    private fun exec(instructions: List<Instruction>) = instructions.forEach { exec(it) }
 
     private fun add() = executeTwoParamsOperation(Int::plus)
 
@@ -130,7 +133,18 @@ internal class REPL(outputStream: OutputStream) {
     }
 
     private fun callFunction(referencedFunctionDefinition: FunctionDefinition) {
-        referencedFunctionDefinition.instructions.forEach { exec(it) }
+        exec(referencedFunctionDefinition.instructions)
+    }
+
+    private fun executeConditional(conditional: Conditional) {
+        val condition = stack.pop()
+        exec(
+            if (condition != 0) {
+                conditional.thenInstructions
+            } else {
+                conditional.elseInstructions
+            }
+        )
     }
 }
 

@@ -16,6 +16,7 @@ internal class REPLTest {
             "02 - Stack Manipulations",
             "03 - Logic",
             "04 - Simple function - square",
+            "05 - Function and test",
         ]
     )
     fun connectWith(baseName: String) {

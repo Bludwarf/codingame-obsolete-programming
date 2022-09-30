@@ -1,6 +1,7 @@
 package com.codingame.obsoleteprogramming
 
 import java.io.StringReader
+import java.lang.Thread.yield
 import java.text.ParseException
 import java.util.*
 
@@ -25,9 +26,9 @@ class Parser {
     }
 
     private fun parseInstruction(
-        instruction: String?,
+        token: String?,
         scanner: Scanner
-    ) = when (instruction) {
+    ) = when (token) {
         "ADD" -> AddInstruction()
         "SUB" -> SubInstruction()
         "MUL" -> MulInstruction()
@@ -43,11 +44,11 @@ class Parser {
         "NOT" -> NotInstruction()
         "DEF" -> parseFunctionDefinition(scanner)
         else -> {
-            val referencedFunctionDefinition = functionDefinitions[instruction]
+            val referencedFunctionDefinition = functionDefinitions[token]
             if (referencedFunctionDefinition != null) {
                 FunctionCall(referencedFunctionDefinition)
             } else {
-                throw ParseException(instruction, 0)
+                throw ParseException(token, 0)
             }
         }
     }
@@ -58,7 +59,7 @@ class Parser {
             while (true) {
                 val token = scanner.next()
                 if (token == "END") break
-                val instruction = parseInstruction(token, scanner)
+                val instruction = parseInstructionInFunctionDefinition(token, scanner)
                 yield(instruction)
             }
         }.toList()
@@ -66,6 +67,27 @@ class Parser {
         val functionDefinition = FunctionDefinition(name, instructions)
         functionDefinitions[functionDefinition.name] = functionDefinition
         return functionDefinition
+    }
+
+    private fun parseInstructionInFunctionDefinition(token: String, scanner: Scanner): Instruction {
+        return if (token == "IF") {
+            val thenInstructions = mutableListOf<Instruction>()
+            val elseInstructions = mutableListOf<Instruction>()
+            var instructions = thenInstructions
+            while (true) {
+                val tokenInConditional = scanner.next()
+                if (tokenInConditional == "ELS") {
+                    instructions = elseInstructions
+                    continue
+                }
+                if (tokenInConditional == "FI") break
+                val instruction = parseInstructionInFunctionDefinition(tokenInConditional, scanner)
+                instructions += instruction
+            }
+            Conditional(thenInstructions, elseInstructions)
+        } else {
+            parseInstruction(token, scanner)
+        }
     }
 }
 
@@ -105,3 +127,4 @@ class NotInstruction() : Instruction()
 
 class FunctionDefinition(val name: String, val instructions: List<Instruction>) : Instruction()
 class FunctionCall(val referencedFunctionDefinition: FunctionDefinition) : Instruction()
+class Conditional(val thenInstructions: List<Instruction>, val elseInstructions: List<Instruction>) : Instruction()
