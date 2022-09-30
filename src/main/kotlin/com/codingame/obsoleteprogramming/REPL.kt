@@ -59,7 +59,7 @@ internal class REPL(outputStream: OutputStream) {
             is PosInstruction -> pos()
             is NotInstruction -> not()
             is FunctionDefinition -> noop()
-            is FunctionCall -> callFunction(instruction.referencedFunctionDefinition)
+            is FunctionCall -> callFunction(instruction.functionName)
             is Conditional -> executeConditional(instruction)
             else -> throw UnexpectedInstructionException(instruction)
         }
@@ -135,8 +135,11 @@ internal class REPL(outputStream: OutputStream) {
         // Nothing to do
     }
 
-    private fun callFunction(referencedFunctionDefinition: FunctionDefinition) {
-        exec(referencedFunctionDefinition.instructions)
+    private fun callFunction(functionName: String) {
+        val functionDefinition = parser.functionDefinitions[functionName]
+        if (functionDefinition != null) {
+            exec(functionDefinition.instructions)
+        }
     }
 
     private fun executeConditional(conditional: Conditional) {

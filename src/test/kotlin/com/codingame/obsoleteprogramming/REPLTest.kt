@@ -18,6 +18,10 @@ internal class REPLTest {
             "04 - Simple function - square",
             "05 - Function and test",
             "06 - Function calling function and nested if",
+            "07 - the Queen of functions",
+            "08 - I have no loop and I must iterate",
+            "09 - Hello Fibonacci !",
+            "10 - Integer square root",
         ]
     )
     fun connectWith(baseName: String) {

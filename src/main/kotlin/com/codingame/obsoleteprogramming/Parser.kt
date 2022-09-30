@@ -7,7 +7,8 @@ import java.util.*
 class Parser {
 
     private val numberParser = NumberParser()
-    private val functionDefinitions = mutableMapOf<String, FunctionDefinition>()
+    private val internalFunctionDefinitions = mutableMapOf<String, FunctionDefinition>()
+    val functionDefinitions get() = internalFunctionDefinitions.toMap()
 
     fun parse(code: String): List<Instruction> {
         val scanner = Scanner(StringReader(code))
@@ -41,9 +42,9 @@ class Parser {
         "NOT" -> NotInstruction()
         "DEF" -> parseFunctionDefinition(scanner)
         else -> {
-            val referencedFunctionDefinition = functionDefinitions[token]
+            val referencedFunctionDefinition = internalFunctionDefinitions[token]
             if (referencedFunctionDefinition != null) {
-                FunctionCall(referencedFunctionDefinition)
+                FunctionCall(token)
             } else {
                 throw ParseException(token, 0)
             }
@@ -56,17 +57,17 @@ class Parser {
             while (true) {
                 val token = scanner.next()
                 if (token == "END") break
-                val instruction = parseInstructionInFunctionDefinition(token, scanner)
+                val instruction = parseInstructionInFunctionDefinition(name, token, scanner)
                 yield(instruction)
             }
         }.toList()
 
         val functionDefinition = FunctionDefinition(name, instructions)
-        functionDefinitions[functionDefinition.name] = functionDefinition
+        internalFunctionDefinitions[functionDefinition.name] = functionDefinition
         return functionDefinition
     }
 
-    private fun parseInstructionInFunctionDefinition(token: String, scanner: Scanner): Instruction {
+    private fun parseInstructionInFunctionDefinition(functionName: String, token: String, scanner: Scanner): Instruction {
         return if (token == "IF") {
             val thenInstructions = mutableListOf<Instruction>()
             val elseInstructions = mutableListOf<Instruction>()
@@ -78,10 +79,12 @@ class Parser {
                     continue
                 }
                 if (tokenInConditional == "FI") break
-                val instruction = parseInstructionInFunctionDefinition(tokenInConditional, scanner)
+                val instruction = parseInstructionInFunctionDefinition(functionName, tokenInConditional, scanner)
                 instructions += instruction
             }
             Conditional(thenInstructions, elseInstructions)
+        } else if (token == functionName) {
+            FunctionCall(functionName)
         } else {
             parseInstruction(token, scanner)
         }
@@ -123,5 +126,5 @@ class PosInstruction() : Instruction()
 class NotInstruction() : Instruction()
 
 class FunctionDefinition(val name: String, val instructions: List<Instruction>) : Instruction()
-class FunctionCall(val referencedFunctionDefinition: FunctionDefinition) : Instruction()
+class FunctionCall(val functionName: String) : Instruction()
 class Conditional(val thenInstructions: List<Instruction>, val elseInstructions: List<Instruction>) : Instruction()
