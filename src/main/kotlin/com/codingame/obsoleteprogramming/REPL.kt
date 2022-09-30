@@ -23,19 +23,22 @@ internal class REPL(outputStream: OutputStream) {
 
             writer.use {
 
-                for (i in 0 until n) {
-                    val line = scanner.nextLine()
-                    exec(line)
+                val lines = sequence {
+                    for (i in 0 until n) {
+                        val line = scanner.nextLine()
+                        yield(line)
+                    }
                 }
-
+                val code = lines.joinToString(" ")
+                exec(code)
             }
 
         }
 
     }
 
-    private fun exec(line: String) {
-        val instructions = parser.parse(line)
+    private fun exec(code: String) {
+        val instructions = parser.parse(code)
         instructions.forEach { exec(it) }
     }
 

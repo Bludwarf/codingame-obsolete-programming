@@ -1,7 +1,6 @@
 package com.codingame.obsoleteprogramming
 
 import java.io.StringReader
-import java.lang.Thread.yield
 import java.text.ParseException
 import java.util.*
 
@@ -10,25 +9,23 @@ class Parser {
     private val numberParser = NumberParser()
     private val functionDefinitions = mutableMapOf<String, FunctionDefinition>()
 
-    fun parse(line: String): List<Instruction> {
-        val scanner = Scanner(StringReader(line))
+    fun parse(code: String): List<Instruction> {
+        val scanner = Scanner(StringReader(code))
 
         return sequence {
             while (scanner.hasNext()) {
                 val instruction = scanner.next()
-                if (numberParser.isANumber(instruction)) {
-                    yield(numberParser.parse(instruction))
-                } else {
-                    yield(parseInstruction(instruction, scanner))
-                }
+                yield(parseInstruction(instruction, scanner))
             }
         }.toList()
     }
 
     private fun parseInstruction(
-        token: String?,
+        token: String,
         scanner: Scanner
-    ) = when (token) {
+    ) = if (numberParser.isANumber(token)) {
+        numberParser.parse(token)
+    } else when (token) {
         "ADD" -> AddInstruction()
         "SUB" -> SubInstruction()
         "MUL" -> MulInstruction()
